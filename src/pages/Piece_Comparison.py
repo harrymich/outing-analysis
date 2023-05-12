@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import dash
-from dash import Dash, dcc, html, Input, Output, callback, dash_table
-import plotly.express as px
+import datetime
 import os
+import time
+
+import dash
 import numpy as np
 import pandas as pd
-import time
-import re
-import datetime
+import plotly.express as px
 import plotly.graph_objects as go
+from dash import dcc, html, Input, Output, callback, dash_table
 from plotly.subplots import make_subplots
 
 # Code from: https://github.com/plotly/dash-labs/tree/main/docs/demos/multi_page_example1
@@ -20,6 +20,7 @@ dash.register_page(__name__, path='/piece_comparison', name='Piece Comparison', 
 # Green Dragon Bridge latitude and longitude
 lat = 52.221795
 lon = 0.163976
+
 
 # Upstream reach spinning post coordinates
 # lat = 52.221814
@@ -53,6 +54,42 @@ def read_session_date_time(fname):
 
     return session_datetime
 
+def plot_split(data, range_color, corner, title):
+    df = data
+
+    if corner == 'First Post':
+        corner_dict = {'lat':52.228098, 'lon':0.169531}
+    elif corner == 'Grassy':
+        corner_dict = {'lat':52.226302, 'lon':0.166827}
+    elif corner == 'Ditton':
+        corner_dict = {'lat':52.222949, 'lon':0.166878}
+
+    split_list = list(range(range_color[0], range_color[1] + 1, 5))
+    splits = [time.strftime("%M:%S", time.gmtime(item)) for item in split_list]
+    hover_name = df['Stroke Count'].apply(lambda x: 'Stroke {:7.0f}'.format(x)).copy()
+    df['Split'] = df['Split (GPS)'].apply(lambda x: time.strftime("%M:%S", time.gmtime(x)))
+    fig = px.scatter_mapbox(df, lat="GPS Lat.", lon="GPS Lon.", color="Split (GPS)",
+                            color_continuous_scale='plasma_r', range_color=range_color,
+                            center = corner_dict, zoom=16, title=title,
+                            hover_name=hover_name, hover_data={'Split': True,
+                                                               'Stroke Rate': True,
+                                                               'Piece Time (s)': True,
+                                                               'Piece Distance (m)': True,
+                                                               'Split (GPS)': False,
+                                                               'GPS Lon.': False,
+                                                               'GPS Lat.': False},
+                            size_max=10)
+    fig.update_layout(height=500, mapbox_style="open-street-map")
+    fig.update_layout(coloraxis_colorbar=dict(
+        title='Boat Split (mm:ss)',
+        titleside='right',
+        ticks='outside',
+        tickmode='array',
+        tickvals=split_list,
+        ticktext=splits,
+        ticksuffix="s"))
+
+    return fig
 
 # assign path
 path, dirs, files = next(os.walk("./csv/"))
@@ -81,6 +118,8 @@ for i in range(file_count):
 dates = []
 for name in files:
     dates.append(read_session_date_time(name))
+
+corners = ['First Post','Grassy','Ditton']
 # The below line was meant to show outing dates in the dropdown in order but since the csv files are not read in order,
 # it messes up the reading of the csv. The wrong date is shown for a given csv.
 # dates.sort(key=lambda v: datetime.datetime.strptime(v[5:10], '%d %b'))
@@ -140,7 +179,13 @@ layout = html.Div([
                         placeholder="No of burns", )
               ], style={'display': 'inline-block'}),
     html.Div([dash_table.DataTable(data=[], id='start_comp', export_format='csv')],
-             style={'width': '40%', }, className="dbc")
+             style={'width': '40%', }, className="dbc"),
+    html.Hr(),
+    html.H1(children='Corner Line Comparison'),
+    html.P(children='Select the corner around which you wish to compare the racing line:'),
+    dcc.Dropdown(options=corners, value=corners[0], id='select_corner', placeholder='Select Corner'),
+    html.Div(id='container'),
+    html.Div(dcc.Graph(id='empty', figure={'data': []}), style={'display': 'none'})
 ])
 
 
@@ -168,7 +213,7 @@ def piece_prompts(outings, pcrate, strcount):
             # stroke_count =
             dist = round(piece['Distance (GPS)'].iloc[-1] - piece['Distance (GPS)'].iloc[0], -1)
             piece_time = round(piece['Elapsed Time'].iloc[-1] - piece['Elapsed Time'].iloc[0], 2)
-            piece_time = str(datetime.timedelta(seconds = piece_time))[2:9]
+            piece_time = str(datetime.timedelta(seconds=piece_time))[2:9]
             piece_rate = round(piece['Stroke Rate'].mean(), 1)
             piece_split = time.strftime("%M:%S", time.gmtime(piece['Split (GPS)'].mean()))
             prompt.append(
@@ -181,6 +226,7 @@ def piece_prompts(outings, pcrate, strcount):
 #  ======= Select Outing, Piece Rate lower limit and Stroke Count lower limit to produce piece list ============
 @callback(Output('piece_figure', 'figure'),
           Output('start_comp', 'data'),
+          Output('container', 'children'),
           Output('err', 'children'),
           Input('piece_selection', 'value'),
           Input('split_range', 'value'),
@@ -191,10 +237,11 @@ def piece_prompts(outings, pcrate, strcount):
           Input("split_bench", "value"),
           Input('rate_bench', 'value'),
           Input('store_pieces', 'data'),
-          Input('piece_selection', 'options')
+          Input('piece_selection', 'options'),
+          Input('select_corner', 'value')
           )
 def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench, rate_bench, store_pieces,
-               prompt):
+               prompt, corner):
     list_of_pieces = [pd.DataFrame.from_dict(i) for i in store_pieces]
     pieces.sort(key=lambda v: (datetime.datetime.strptime(v[:6], '%d %b'), int(v[23:25])))
     pieces_to_plot = [list_of_pieces[i] for i in [prompt.index(i) for i in pieces]]
@@ -258,7 +305,7 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
         piece_data = i
         start_length = draws + winds + burns
         if len(piece_data['Split']) < start_length:
-            return dash.no_update, dash.no_update, 'One of the pieces you\'ve selected is less than the total start ' \
+            return dash.no_update, dash.no_update, dash.no_update, 'One of the pieces you\'ve selected is less than the total start ' \
                                                    'length of {} strokes. Please unselect it or change your start ' \
                                                    'definition below!'.format(start_length)
         draws_split = piece_data['Split'].iloc[draws - 1]
@@ -286,4 +333,13 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
                   annotation_position='bottom left', row='all', line_width=0, fillcolor="red", opacity=0.2)
     fig.update_traces(xaxis='x2')
 
-    return fig, df.to_dict('records'), ''
+    graphs = []
+    for i,title in zip(pieces_to_plot,pieces):
+        title = title[:25]
+        plot = plot_split(i, [80,140], corner, title)
+        graphs.append(dcc.Graph(
+            id='graph-{}'.format(i),
+            figure=plot, style={'display': 'inline-block'}
+        ))
+
+    return fig, df.to_dict('records'), html.Div(graphs), ''
