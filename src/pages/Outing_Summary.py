@@ -247,7 +247,7 @@ layout = html.Div(
                      "interactive map so hover over each point (stroke) to see the data (e.g. split and rate) "
                      "associated with that stroke. You can select the split range for the colour scale below:",
             className="header-description"),
-        dcc.RangeSlider(70, 150, 5, count=1, value=[100, 130], id="colour_range"),
+        dcc.RangeSlider(70, 150, 5, count=1, value=[90, 130], id="colour_range"),
         html.Div(
             children=[
                 html.Div(
@@ -258,8 +258,8 @@ layout = html.Div(
         dcc.Dropdown(options=x_axis, value=x_axis[-1], id='x_axis', placeholder='Select variable to plot against',
                      clearable=False),
         html.Div(['Split and rate range for plot:']),
-        dcc.RangeSlider(70, 170, 5, count=1, value=[100, 130], id="split_range"),
-        dcc.RangeSlider(15, 50, 1, count=1, value=[26, 34], id="rate_range"),
+        dcc.RangeSlider(70, 170, 5, count=1, value=[80, 140], id="split_range"),
+        dcc.RangeSlider(15, 50, 1, count=1, value=[24, 40], id="rate_range"),
         html.Div(
             children=[
                 html.Div(
