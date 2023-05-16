@@ -208,6 +208,7 @@ def piece_prompts(outings, pcrate, strcount):
         df1 = df_past_gr_dr.loc[df_past_gr_dr['Stroke Rate'] >= rate]
         list_of_df = np.split(df1, np.flatnonzero(np.diff(df1['Total Strokes']) != 1) + 1)
         list_of_pieces = [piece for piece in list_of_df if len(piece) >= stroke_count]
+        list_of_pieces = [i for i in list_of_pieces if i['Split (GPS)'].mean() <= 150]
         piece_list.extend(list_of_pieces)
         for count, piece in enumerate(list_of_pieces):
             # stroke_count =
