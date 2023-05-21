@@ -202,7 +202,7 @@ def piece_prompts(outings, pcrate, strcount):
     rate = pcrate
     stroke_count = strcount
 
-    outings.sort(key=lambda v: datetime.datetime.strptime(v[5:10], '%d %b'))
+    outings.sort(key=lambda v: datetime.datetime.strptime(v[4:10], '%d %b'))
     for session, datestring in zip([sessions_list[i] for i in [dates.index(value) for value in outings]], outings):
 
         session_datetime = datestring[4:10] + ' ' + datestring[18:26] + ','
