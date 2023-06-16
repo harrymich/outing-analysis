@@ -126,7 +126,7 @@ for name in files:
 corners = ['First Post','Grassy','Ditton']
 # The below line was meant to show outing dates in the dropdown in order but since the csv files are not read in order,
 # it messes up the reading of the csv. The wrong date is shown for a given csv.
-# dates.sort(key=lambda v: datetime.datetime.strptime(v[5:10], '%d %b'))
+sorted_dates = sorted(dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
 
 layout = html.Div([
     html.H1(children='Piece Comparison'),
@@ -136,7 +136,7 @@ layout = html.Div([
     html.Div(children='''
         Select the outing date:
     '''),
-    dcc.Dropdown(options=dates, value=dates[-1:], id='select_outing', placeholder='Select Outing Date', multi=True),
+    dcc.Dropdown(options=sorted_dates, value=sorted_dates[-1:], id='select_outing', placeholder='Select Outing Date', multi=True),
     html.P(children=''),
     dcc.Store(id='store_pieces', data=[], storage_type='memory'),
     html.P(
