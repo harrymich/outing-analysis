@@ -28,14 +28,14 @@ sidebar = dbc.Nav(
 app.layout = dbc.Container([
     dbc.Row([dbc.Col(
         [
-            html.Img(src='assets\wcbc_crest.jpg', style={'height': '100%', 'width': '100%'})
+            html.Img(src='assets\Cantabs_Crest.jpg', style={'height': '100%', 'width': '100%'})
         ], width=1
     ),
         dbc.Col(html.Div("Outing Analysis",
                          style={'fontSize': 50, 'textAlign': 'center'})),
         dbc.Col(
             [
-                html.Img(src='assets\Wolfson_College_Rowing_Blade.png', style={'height': '100%', 'width': '100%'})
+                html.Img(src='assets\Cantabs_Rowing_Blade.png', style={'height': '100%', 'width': '100%'})
             ], width=1
         ),
     ]),

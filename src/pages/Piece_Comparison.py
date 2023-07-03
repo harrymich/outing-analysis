@@ -15,7 +15,7 @@ from plotly.subplots import make_subplots
 
 # Code from: https://github.com/plotly/dash-labs/tree/main/docs/demos/multi_page_example1
 dash.register_page(__name__, path='/piece_comparison', name='Piece Comparison', title='Piece Comparison',
-                   image='wcbc_crest.jpg', description='Compare pieces\' splits and rates')
+                   image='Cantabs_Crest.jpg', description='Compare pieces\' splits and rates')
 
 # Green Dragon Bridge latitude and longitude
 lat = 52.221795
