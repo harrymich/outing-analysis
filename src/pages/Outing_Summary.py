@@ -75,12 +75,12 @@ lon = 0.163976
 def read_session_datetime(fname):
     import datetime
 
-    date_string = fname.split(" ")[-2]
+    date_string = fname.split(" ")[2]
     date_y = int(date_string[0:4])
     date_m = int(date_string[4:6])
     date_d = int(date_string[6:8])
 
-    time_string = fname.split(" ")[-1]
+    time_string = fname.split(" ")[3]
     time_h = int(time_string[0:2])
     time_m = int(time_string[2:4])
 
@@ -96,7 +96,12 @@ def read_session_datetime(fname):
 
     session_datetime = session.strftime("%a %d %b %Y - %H:%M %p".format())
 
-    return session_datetime
+    try:
+        Session_tag = fname.split(" ")[4]
+    except:
+        Session_tag = ''
+
+    return session_datetime + ' ' + Session_tag
 
 
 # Reading a session's date and time. Credit to Rob Sales.
@@ -184,6 +189,8 @@ def plot_split(data, range_color):
 dates = []
 for name in files:
     dates.append(read_session_datetime(name))
+
+clean_dates = [date[:26] for date in dates]
 
 sorted_dates = sorted(dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
 
@@ -291,7 +298,7 @@ layout = html.Div(
           Input('A', 'value')
           )
 def update_output(value):
-    stats = get_statistics(sessions_list[dates.index(value)])
+    stats = get_statistics(sessions_list[clean_dates.index(value)])
     stats[0].loc['Split (s/500m)'] = stats[0].loc['Split (s/500m)'].apply(
         lambda x: str(datetime.timedelta(seconds=x))[2:9])
     return stats[0].reset_index(names='').to_dict('records'), stats[1], stats[2], stats[3]

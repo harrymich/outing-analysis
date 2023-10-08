@@ -30,15 +30,15 @@ lon = 0.163976
 # lat = 52.356794
 # lon = 0.049909
 
-def read_session_date_time(fname):
+def read_session_datetime(fname):
     import datetime
 
-    date_string = fname.split(" ")[-2]
+    date_string = fname.split(" ")[2]
     date_y = int(date_string[0:4])
     date_m = int(date_string[4:6])
     date_d = int(date_string[6:8])
 
-    time_string = fname.split(" ")[-1]
+    time_string = fname.split(" ")[3]
     time_h = int(time_string[0:2])
     time_m = int(time_string[2:4])
 
@@ -47,12 +47,19 @@ def read_session_date_time(fname):
             time_h = time_h
         else:
             time_h = time_h + 12
+    else:
+        pass
 
     session = datetime.datetime(date_y, date_m, date_d, time_h, time_m)
 
     session_datetime = session.strftime("%a %d %b %Y - %H:%M %p".format())
 
-    return session_datetime
+    try:
+        Session_tag = fname.split(" ")[4]
+    except:
+        Session_tag = ''
+
+    return session_datetime + ' ' + Session_tag
 
 def plot_split(data, range_color, corner, title):
     df = data
@@ -121,12 +128,13 @@ for i in range(file_count):
 # Creating a list of outing dates using the read_session_date_time function. This is needed for Dash dropdown menus
 dates = []
 for name in files:
-    dates.append(read_session_date_time(name))
+    dates.append(read_session_datetime(name))
 
+clean_dates = [date[:26] for date in dates]
 corners = ['First Post','Grassy','Ditton']
 # The below line was meant to show outing dates in the dropdown in order but since the csv files are not read in order,
 # it messes up the reading of the csv. The wrong date is shown for a given csv.
-sorted_dates = sorted(dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
+sorted_dates = sorted(clean_dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
 
 layout = html.Div([
     html.H1(children='Piece Comparison'),
@@ -203,7 +211,7 @@ def piece_prompts(outings, pcrate, strcount):
     stroke_count = strcount
 
     outings.sort(key=lambda v: datetime.datetime.strptime(v[4:10], '%d %b'))
-    for session, datestring in zip([sessions_list[i] for i in [dates.index(value) for value in outings]], outings):
+    for session, datestring in zip([sessions_list[i] for i in [clean_dates.index(value) for value in outings]], outings):
 
         session_datetime = datestring[4:10] + ' ' + datestring[18:26] + ','
 

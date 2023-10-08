@@ -55,12 +55,12 @@ for i in range(file_count):
 def read_session_datetime(fname):
     import datetime
 
-    date_string = fname.split(" ")[-2]
+    date_string = fname.split(" ")[2]
     date_y = int(date_string[0:4])
     date_m = int(date_string[4:6])
     date_d = int(date_string[6:8])
 
-    time_string = fname.split(" ")[-1]
+    time_string = fname.split(" ")[3]
     time_h = int(time_string[0:2])
     time_m = int(time_string[2:4])
 
@@ -76,7 +76,12 @@ def read_session_datetime(fname):
 
     session_datetime = session.strftime("%a %d %b %Y - %H:%M %p".format())
 
-    return session_datetime
+    try:
+        Session_tag = fname.split(" ")[4]
+    except:
+        Session_tag = ''
+
+    return session_datetime + ' ' + Session_tag
 
 
 session_dist_list = []
@@ -91,7 +96,7 @@ for session, name in zip(sessions_list, files):
 
 df = pd.DataFrame({'Date': dates, 'Distance': session_dist_list, 'Av Split Raw': split_list})
 df['Average Split'] = df['Av Split Raw'].apply(lambda x: time.strftime("%M:%S", time.gmtime(x)))
-df.index = pd.to_datetime([date for date in dates], format="%a %d %b %Y - %H:%M %p")
+df.index = pd.to_datetime([date[:26] for date in dates], format="%a %d %b %Y - %H:%M %p")
 df = df.sort_index()
 
 colors = px.colors.qualitative.Antique
