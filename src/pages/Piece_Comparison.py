@@ -134,7 +134,7 @@ clean_dates = [date[:26] for date in dates]
 corners = ['First Post','Grassy','Ditton']
 # The below line was meant to show outing dates in the dropdown in order but since the csv files are not read in order,
 # it messes up the reading of the csv. The wrong date is shown for a given csv.
-sorted_dates = sorted(clean_dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
+sorted_dates = sorted(dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
 
 layout = html.Div([
     html.H1(children='Piece Comparison'),
@@ -211,9 +211,10 @@ def piece_prompts(outings, pcrate, strcount):
     stroke_count = strcount
 
     outings.sort(key=lambda v: datetime.datetime.strptime(v[4:10], '%d %b'))
-    for session, datestring in zip([sessions_list[i] for i in [clean_dates.index(value) for value in outings]], outings):
+    for session, datestring in zip([sessions_list[i] for i in [dates.index(value) for value in outings]], outings):
 
         session_datetime = datestring[4:10] + ' ' + datestring[18:26] + ','
+        session_tag = datestring[datestring.find("(")+1:datestring.find(")")]
 
         # df_past_gr_dr = session.loc[(session['GPS Lat.'] >= lat) & (session['GPS Lon.'] >= lon)]
         df_past_gr_dr = session
@@ -230,8 +231,8 @@ def piece_prompts(outings, pcrate, strcount):
             piece_rate = round(piece['Stroke Rate'].mean(), 1)
             piece_split = time.strftime("%M:%S", time.gmtime(piece['Split (GPS)'].mean()))
             prompt.append(
-                "{} Piece {} : {}m piece at average rate of {}, average split of {}, lasting {} and {} strokes".format(
-                    session_datetime, count + 1, dist, piece_rate, piece_split, piece_time, len(piece)))
+                "{} - {} Piece {} : {}m piece at average rate of {}, average split of {}, lasting {} and {} strokes".format(
+                    session_datetime, session_tag, count + 1, dist, piece_rate, piece_split, piece_time, len(piece)))
 
     return prompt, prompt[-2:], [df.to_dict() for df in piece_list]
 
