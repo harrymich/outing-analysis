@@ -190,7 +190,7 @@ dates = []
 for name in files:
     dates.append(read_session_datetime(name))
 
-clean_dates = [date[:26] for date in dates]
+clean_dates = [date for date in dates]
 
 sorted_dates = sorted(dates, key=lambda v: (datetime.datetime.strptime(v[4:10], '%d %b'), datetime.datetime.strptime(v[18:26], '%H:%M %p')))
 

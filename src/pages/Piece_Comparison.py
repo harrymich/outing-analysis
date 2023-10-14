@@ -257,12 +257,12 @@ def piece_prompts(outings, pcrate, strcount):
 def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench, rate_bench, store_pieces,
                prompt, corner):
     list_of_pieces = [pd.DataFrame.from_dict(i) for i in store_pieces]
-    pieces.sort(key=lambda v: (datetime.datetime.strptime(v[:6], '%d %b'), int(v[23:25])))
+    pieces.sort(key=lambda v: (datetime.datetime.strptime(v[:6], '%d %b'), int(v.split("Piece ")[1][:2])))
     pieces_to_plot = [list_of_pieces[i] for i in [prompt.index(i) for i in pieces]]
 
     colors = px.colors.qualitative.Antique
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
-                        vertical_spacing=0.05, x_title='Stroke Count')
+                        vertical_spacing=0.05, x_title='Distance (m)')
 
     for x, (i, title) in enumerate(zip(pieces_to_plot, pieces)):
         piece_data = i
@@ -277,10 +277,10 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
             piece_data['Distance (GPS)'].index]
         piece_data = piece_data.rename(columns={'Elapsed Time': 'Outing Time', 'Distance (GPS)': 'Outing Distance'})
         data = piece_data
-        fig.add_trace(go.Scatter(x=data['Stroke Count'], y=data['Split (GPS)'], hovertemplate='%{text}',
+        fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Split (GPS)'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Split'].iloc[x]) for x, y in enumerate(data.index)],
                                  name=title[:25], mode='lines', line=dict(color=colors[x]), legendrank=x), row=1, col=1)
-        fig.add_trace(go.Scatter(x=data['Stroke Count'], y=data['Stroke Rate'], hovertemplate='%{text}',
+        fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Stroke Rate'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Stroke Rate'].iloc[x]) for x, y in enumerate(data.index)],
                                  name=title[:25], mode='lines', line=dict(color=colors[x]), showlegend=False), row=2,
                       col=1)
