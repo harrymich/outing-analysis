@@ -279,10 +279,10 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
         data = piece_data
         fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Split (GPS)'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Split'].iloc[x]) for x, y in enumerate(data.index)],
-                                 name=title[:title.find(':')].strip(), mode='lines', line=dict(color=colors[x]), legendrank=x), row=1, col=1)
+                                 name=title[:title.find(' :')].strip(), mode='lines', line=dict(color=colors[x]), legendrank=x), row=1, col=1)
         fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Stroke Rate'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Stroke Rate'].iloc[x]) for x, y in enumerate(data.index)],
-                                 name=title[:title.find(':')].strip(), mode='lines', line=dict(color=colors[x]), showlegend=False), row=2,
+                                 name=title[:title.find(' :')].strip(), mode='lines', line=dict(color=colors[x]), showlegend=False), row=2,
                       col=1)
 
     fig.update_layout(height=750,
