@@ -106,7 +106,7 @@ sessions_list = []
 
 # append sessions to list
 for i in range(file_count):
-    temp_df = pd.read_csv("./csv/" + files[i], skiprows=28, usecols=[1, 3, 4, 5, 8, 9, 10, 22, 23]).drop([0])
+    temp_df = pd.read_csv("./csv/" + files[i], skiprows=28, usecols=[1, 3, 4, 5, 8, 9, 10, 22, 23], encoding='latin-1').drop([0])
 
     # Remove rows with '---' as value because this messes up the float type change later.
     temp_df = temp_df[temp_df['Speed (GPS)'] != '---']
