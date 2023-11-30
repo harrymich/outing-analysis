@@ -229,7 +229,7 @@ def piece_prompts(outings, pcrate, strcount):
             piece_time = round(piece['Elapsed Time'].iloc[-1] - piece['Elapsed Time'].iloc[0], 2)
             piece_time = str(datetime.timedelta(seconds=piece_time))[2:9]
             piece_rate = round(piece['Stroke Rate'].mean(), 1)
-            piece_split = time.strftime("%M:%S", time.gmtime(piece['Split (GPS)'].mean()))
+            piece_split = datetime.datetime.fromtimestamp(piece['Split (GPS)'].mean()).strftime("%M:%S.%f")[:7]
             prompt.append(
                 "{} - {} Piece {} : {}m piece at average rate of {}, average split of {}, lasting {} and {} strokes".format(
                     session_datetime, session_tag, count + 1, dist, piece_rate, piece_split, piece_time, len(piece)))
@@ -349,7 +349,7 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
 
     graphs = []
     for i,title in zip(pieces_to_plot,pieces):
-        title = title[:25]
+        title = title[:title.find(' :')].strip()
         plot = plot_split(i, [80,140], corner, title)
         graphs.append(dcc.Graph(
             id='graph-{}'.format(i),

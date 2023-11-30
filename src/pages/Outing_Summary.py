@@ -331,7 +331,7 @@ def piece_dropdown(value, rate, stroke_count):
         piece_time = round(piece['Elapsed Time'].iloc[-1] - piece['Elapsed Time'].iloc[0], 2)
         piece_time = str(datetime.timedelta(seconds=piece_time))[2:9]
         piece_rate = round(piece['Stroke Rate'].mean(), 1)
-        piece_split = time.strftime("%M:%S", time.gmtime(piece['Split (GPS)'].mean()))
+        piece_split = datetime.datetime.fromtimestamp(piece['Split (GPS)'].mean()).strftime("%M:%S.%f")[:7]
         prompt.append(
             "Piece {}: {}m piece at average rate of {}, average split of {}, lasting {} and {} strokes".format(
                 count + 1, dist, piece_rate, piece_split, piece_time, stroke_count))
@@ -367,7 +367,7 @@ def piece_summary(piece_value, x_axis, split_range, rate_range, colour_range, pi
     piece_data['Stroke Count'] = np.arange(piece_data.shape[0] + 1)[1:]
     piece_data['Piece Time (s)'] = [round(piece_data['Elapsed Time'].loc[i] - piece_data['Elapsed Time'].iloc[0], 2) for
                                     i in piece_data['Elapsed Time'].index]
-    piece_data['Piece Time (s)'] = piece_data['Piece Time (s)'].apply(lambda x: time.strftime("%H:%M:%S", time.gmtime(x)))
+    piece_data['Piece Time (s)'] = piece_data['Piece Time (s)'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%H:%M:%S.%f")[:10])
     piece_data['Piece Distance (m)'] = [
         round(piece_data['Distance (GPS)'].loc[i] - piece_data['Distance (GPS)'].iloc[0], 2) for i in
         piece_data['Distance (GPS)'].index]
@@ -376,7 +376,7 @@ def piece_summary(piece_value, x_axis, split_range, rate_range, colour_range, pi
 
     data = piece_data
     x = data[x_axis]
-    data['Split'] = data['Split (GPS)'].apply(lambda x: time.strftime("%M:%S", time.gmtime(x)))
+    data['Split'] = data['Split (GPS)'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%M:%S.%f")[:7])
     colors = px.colors.qualitative.Plotly
     fig = make_subplots(rows=1, cols=1, shared_xaxes=True,
                         vertical_spacing=0.05, x_title=x_axis, specs=[[{"secondary_y": True}]])
