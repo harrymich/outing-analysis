@@ -398,12 +398,12 @@ def piece_summary(piece_value, x_axis, split_range, rate_range, colour_range, pi
         spl_bench_str = int(spl_bench[1]) * 60 + int(spl_bench[3]) * 10 + int(spl_bench[4])
         fig.add_trace(go.Scatter(x=[x.min(), x.max()], y=[spl_bench_str, spl_bench_str],
                                  name='Benchmark: {}s'.format(spl_bench),
-                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color=colors[0])))
+                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color='red')))
 
     if rt_bench:
         fig.add_trace(go.Scatter(x=[x.min(), x.max()], y=[rt_bench, rt_bench],
                                  name='Benchmark: {}s/m'.format(rt_bench),
-                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color=colors[1])),
+                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color='red')),
                       secondary_y=True)
 
     fig.update_layout(height=500, hovermode="x unified", legend_traceorder="normal")
