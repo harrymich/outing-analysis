@@ -15,7 +15,7 @@ from dash import dcc, dash_table
 from dash import html
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
-from dash_bootstrap_templates import ThemeSwitchAIO, ThemeChangerAIO, template_from_url
+# from dash_bootstrap_templates import ThemeSwitchAIO, ThemeChangerAIO, template_from_url
 from datetime import date
 import datetime
 from dash.dependencies import Input, Output
