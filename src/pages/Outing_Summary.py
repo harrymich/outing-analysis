@@ -323,7 +323,7 @@ def piece_dropdown(value, rate, stroke_count):
     df1 = df_past_gr_dr.loc[df_past_gr_dr['Stroke Rate'] >= rate]
     list_of_df = np.split(df1, np.flatnonzero(np.diff(df1['Total Strokes']) != 1) + 1)
     list_of_pieces = [i for i in list_of_df if len(i) >= stroke_count]
-    list_of_pieces = [i for i in list_of_pieces if i['Split (GPS)'].mean() <= 150]
+    list_of_pieces = [i for i in list_of_pieces if i['Split (GPS)'].mean() <= 180]
     prompt = []
     for count, piece in enumerate(list_of_pieces):
         stroke_count = len(piece)
@@ -398,12 +398,12 @@ def piece_summary(piece_value, x_axis, split_range, rate_range, colour_range, pi
         spl_bench_str = int(spl_bench[1]) * 60 + int(spl_bench[3]) * 10 + int(spl_bench[4])
         fig.add_trace(go.Scatter(x=[x.min(), x.max()], y=[spl_bench_str, spl_bench_str],
                                  name='Benchmark: {}s'.format(spl_bench),
-                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color='red')))
+                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color=colors[0])))
 
     if rt_bench:
         fig.add_trace(go.Scatter(x=[x.min(), x.max()], y=[rt_bench, rt_bench],
                                  name='Benchmark: {}s/m'.format(rt_bench),
-                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color='red')),
+                                 mode='lines', line_dash="dash", hovertemplate='', line=dict(color=colors[1])),
                       secondary_y=True)
 
     fig.update_layout(height=500, hovermode="x unified", legend_traceorder="normal")

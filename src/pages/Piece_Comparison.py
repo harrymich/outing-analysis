@@ -129,6 +129,7 @@ for i in range(file_count):
 dates = []
 for name in files:
     dates.append(read_session_datetime(name))
+x_axis = ['Stroke Count', 'Piece Time (s)', 'Piece Distance (m)']
 
 clean_dates = [date[:26] for date in dates]
 corners = ['First Post','Grassy','Ditton']
@@ -164,7 +165,10 @@ layout = html.Div([
     dcc.Checklist(id='piece_selection', options=[]),
     html.P(id='err', style={'color': 'red'}),
     html.Hr(),
-    html.Div(['Split range for plot:', dcc.RangeSlider(60, 150, 5, count=1, value=[90, 140], id="split_range")]),
+    html.P(children="Plot against:",
+               className="header-description"),
+    dcc.Dropdown(options=x_axis, value=x_axis[-1], id='x_axis', placeholder='Select variable to plot against', clearable=False),
+    html.Div(['Split range for plot:', dcc.RangeSlider(60, 180, 5, count=1, value=[90, 140], id="split_range")]),
     html.Div(['Rate range for plot:', dcc.RangeSlider(15, 50, 1, count=1, value=[24, 40], id="rate_range")]),
     dcc.Graph(id="piece_figure"),
     html.P("Add benchmark lines for split and rate"),
@@ -221,7 +225,10 @@ def piece_prompts(outings, pcrate, strcount):
         df1 = df_past_gr_dr.loc[df_past_gr_dr['Stroke Rate'] >= rate]
         list_of_df = np.split(df1, np.flatnonzero(np.diff(df1['Total Strokes']) != 1) + 1)
         list_of_pieces = [piece for piece in list_of_df if len(piece) >= stroke_count]
-        list_of_pieces = [i for i in list_of_pieces if i['Split (GPS)'].mean() <= 150]
+        # Line of code below is meant to exclude pieces with an average split above a threshold. This helps remove
+        # say fronstops builds or things like that but ends up removing low-rate pieces or slow pieces against the
+        # stream/wind. Commented out for now.
+        list_of_pieces = [i for i in list_of_pieces if i['Split (GPS)'].mean()<= 180]
         piece_list.extend(list_of_pieces)
         for count, piece in enumerate(list_of_pieces):
             # stroke_count =
@@ -252,17 +259,18 @@ def piece_prompts(outings, pcrate, strcount):
           Input('rate_bench', 'value'),
           Input('store_pieces', 'data'),
           Input('piece_selection', 'options'),
-          Input('select_corner', 'value')
+          Input('select_corner', 'value'),
+          Input('x_axis', 'value'),
           )
 def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench, rate_bench, store_pieces,
-               prompt, corner):
+               prompt, corner, x_axis):
     list_of_pieces = [pd.DataFrame.from_dict(i) for i in store_pieces]
     pieces.sort(key=lambda v: (datetime.datetime.strptime(v[:6], '%d %b'), int(v.split("Piece ")[1][:2])))
     pieces_to_plot = [list_of_pieces[i] for i in [prompt.index(i) for i in pieces]]
 
     colors = px.colors.qualitative.Antique
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
-                        vertical_spacing=0.05, x_title='Distance (m)')
+                        vertical_spacing=0.05, x_title=x_axis)
 
     for x, (i, title) in enumerate(zip(pieces_to_plot, pieces)):
         piece_data = i
@@ -277,10 +285,10 @@ def piece_list(pieces, split_range, rate_range, draws, winds, burns, split_bench
             piece_data['Distance (GPS)'].index]
         piece_data = piece_data.rename(columns={'Elapsed Time': 'Outing Time', 'Distance (GPS)': 'Outing Distance'})
         data = piece_data
-        fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Split (GPS)'], hovertemplate='%{text}',
+        fig.add_trace(go.Scatter(x=data[x_axis], y=data['Split (GPS)'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Split'].iloc[x]) for x, y in enumerate(data.index)],
                                  name=title[:title.find(' :')].strip(), mode='lines', line=dict(color=colors[x]), legendrank=x), row=1, col=1)
-        fig.add_trace(go.Scatter(x=data['Piece Distance (m)'], y=data['Stroke Rate'], hovertemplate='%{text}',
+        fig.add_trace(go.Scatter(x=data[x_axis], y=data['Stroke Rate'], hovertemplate='%{text}',
                                  text=['{}'.format(data['Stroke Rate'].iloc[x]) for x, y in enumerate(data.index)],
                                  name=title[:title.find(' :')].strip(), mode='lines', line=dict(color=colors[x]), showlegend=False), row=2,
                       col=1)
